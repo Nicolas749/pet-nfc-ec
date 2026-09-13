@@ -1,13 +1,15 @@
-import { prisma } from "@/lib/prisma";
+import { PetRepository } from "@/repositories/PetRepository";
+import { PetService } from "@/services/PetService";
 import { notFound } from "next/navigation";
-import { Phone, MessageCircle, Info, CalendarDays, PawPrint, Heart } from "lucide-react";
+import { Phone, MessageCircle, CalendarDays, PawPrint, Heart } from "lucide-react";
 
 export default async function PublicPetProfile({ params }: { params: { slug: string } }) {
   const { slug } = await params;
   
-  const pet = await prisma.petProfile.findUnique({
-    where: { slug }
-  });
+  const petRepository = new PetRepository();
+  const petService = new PetService(petRepository);
+  
+  const pet = await petService.getPetBySlug(slug);
 
   if (!pet) {
     notFound();
