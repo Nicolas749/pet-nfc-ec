@@ -52,7 +52,7 @@ export default async function AdminDashboard() {
                   </td>
                 </tr>
               ) : (
-                pets.map((pet) => (
+                pets.map((pet: any) => (
                   <tr key={pet.id} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="px-6 py-4 font-medium text-gray-900 flex items-center">
                       {pet.photoUrl ? (
