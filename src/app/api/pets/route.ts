@@ -33,6 +33,11 @@ export async function POST(request: Request) {
 
     const petProfile = await petService.createPet({
       ...data,
+      breed: data.breed ?? null,
+      age: data.age ?? null,
+      photoUrl: data.photoUrl ?? null,
+      ownerPhone: data.ownerPhone ?? null,
+      ownerWhatsApp: data.ownerWhatsApp ?? null,
       userId: (session.user as any).id, 
     });
 
