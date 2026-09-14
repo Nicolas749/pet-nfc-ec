@@ -17,9 +17,9 @@ export default async function AdminDashboard() {
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Perfiles de Mascotas</h1>
           <p className="text-gray-500 mt-1">Gestiona los perfiles vinculados a las placas NFC.</p>
         </div>
-        
-        <Link 
-          href="/admin/pets/new" 
+
+        <Link
+          href="/admin/pets/new"
           className="inline-flex items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -66,9 +66,9 @@ export default async function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{pet.breed || "-"}</td>
                     <td className="px-6 py-4">
-                      <Link href={`/p/${pet.slug}`} target="_blank" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                      <Link href={`/pets/${pet.slug}`} target="_blank" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
                         <QrCode className="w-4 h-4 mr-1.5" />
-                        /p/{pet.slug}
+                        /pets/{pet.slug}
                       </Link>
                     </td>
                     <td className="px-6 py-4">

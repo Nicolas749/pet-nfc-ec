@@ -3,17 +3,18 @@ import { getServerSession } from "next-auth/next";
 import { petProfileSchema } from "@/lib/schemas";
 import { PetRepository } from "@/repositories/PetRepository";
 import { PetService } from "@/services/PetService";
-import { prisma } from "@/lib/prisma"; // Needed just for the dummy user logic
+import { checkAdminAccess, verifyCsrfOrigin } from "@/lib/auth-utils";
 
 const petRepository = new PetRepository();
 const petService = new PetService(petRepository);
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession();
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const csrfError = verifyCsrfOrigin(request);
+    if (csrfError) return csrfError;
+
+    const { error, session } = await checkAdminAccess();
+    if (error) return error;
 
     const body = await request.json();
     const result = petProfileSchema.safeParse(body);
@@ -30,22 +31,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: { fieldErrors: { slug: ["El identificador ya está en uso"] } } }, { status: 400 });
     }
 
-    // Ensure the dummy admin user exists in the database
-    // (This part should ideally be in a UserService, but keeping it here for MVP simplicity)
-    await prisma.user.upsert({
-      where: { id: "1" },
-      update: {},
-      create: {
-        id: "1",
-        email: "admin@demo.com",
-        password: "admin123",
-        name: "Admin",
-      }
-    });
-
     const petProfile = await petService.createPet({
       ...data,
-      userId: "1", 
+      userId: (session.user as any).id, 
     });
 
     return NextResponse.json(petProfile, { status: 201 });
@@ -57,10 +45,8 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const session = await getServerSession();
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const { error } = await checkAdminAccess();
+    if (error) return error;
 
     const pets = await petService.getAllPets();
 
