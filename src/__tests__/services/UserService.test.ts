@@ -21,6 +21,7 @@ describe('UserService', () => {
     email: 'test@demo.com',
     password: 'hashedPassword123',
     name: 'Test User',
+    requiresPasswordChange: false,
     createdAt: mockDate,
     updatedAt: mockDate,
   };
@@ -45,7 +46,8 @@ describe('UserService', () => {
       const result = await userService.createUser({
         email: 'test@demo.com',
         password: 'plainPassword123',
-        name: 'Test User'
+        name: 'Test User',
+        requiresPasswordChange: false
       });
 
       expect(bcrypt.hash).toHaveBeenCalledWith('plainPassword123', 'mockSalt');
@@ -62,7 +64,8 @@ describe('UserService', () => {
       await expect(userService.createUser({
         email: 'test@demo.com',
         password: 'plainPassword123',
-        name: 'Test User'
+        name: 'Test User',
+        requiresPasswordChange: false
       })).rejects.toThrow('User with this email already exists');
     });
   });
