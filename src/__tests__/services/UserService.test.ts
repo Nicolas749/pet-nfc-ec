@@ -30,6 +30,7 @@ describe('UserService', () => {
       findById: jest.fn(),
       findByEmail: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     };
     
     userService = new UserService(mockRepository);
