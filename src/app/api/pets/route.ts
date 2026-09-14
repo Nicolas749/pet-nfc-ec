@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { prisma } from "@/lib/prisma";
 import { petProfileSchema } from "@/lib/schemas";
+import { PetRepository } from "@/repositories/PetRepository";
+import { PetService } from "@/services/PetService";
+import { prisma } from "@/lib/prisma"; // Needed just for the dummy user logic
+
+const petRepository = new PetRepository();
+const petService = new PetService(petRepository);
 
 export async function POST(request: Request) {
   try {
@@ -19,15 +24,14 @@ export async function POST(request: Request) {
 
     const data = result.data;
     
-    // Check if slug is unique
-    const existing = await prisma.petProfile.findUnique({
-      where: { slug: data.slug }
-    });
+    // Check if slug is unique using the service
+    const existing = await petService.getPetBySlug(data.slug);
     if (existing) {
       return NextResponse.json({ error: { fieldErrors: { slug: ["El identificador ya está en uso"] } } }, { status: 400 });
     }
 
     // Ensure the dummy admin user exists in the database
+    // (This part should ideally be in a UserService, but keeping it here for MVP simplicity)
     await prisma.user.upsert({
       where: { id: "1" },
       update: {},
@@ -39,13 +43,9 @@ export async function POST(request: Request) {
       }
     });
 
-    const petProfile = await prisma.petProfile.create({
-      data: {
-        ...data,
-        // En una app real, buscaríamos el ID del usuario en sesión.
-        // Para este MVP (donde el admin está hardcodeado a ID 1 en NextAuth)
-        userId: "1", 
-      },
+    const petProfile = await petService.createPet({
+      ...data,
+      userId: "1", 
     });
 
     return NextResponse.json(petProfile, { status: 201 });
@@ -62,9 +62,7 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const pets = await prisma.petProfile.findMany({
-      orderBy: { createdAt: "desc" }
-    });
+    const pets = await petService.getAllPets();
 
     return NextResponse.json(pets);
   } catch (error) {
