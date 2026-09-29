@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { checkAdminAccess, verifyCsrfOrigin } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { petProfileSchema } from "@/lib/schemas";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const csrfError = verifyCsrfOrigin(request);
+    if (csrfError) return csrfError;
+
+    const { error, session } = await checkAdminAccess();
+    if (error) return error;
 
     const body = await request.json();
     const result = petProfileSchema.safeParse(body);
@@ -16,11 +19,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const { id } = await params;
 
-    // Verificar slug único excluyendo este mismo ID
-    const existing = await prisma.petProfile.findUnique({ where: { slug: result.data.slug } });
-    if (existing && existing.id !== id) {
-      return NextResponse.json({ error: { fieldErrors: { slug: ["El identificador ya está en uso"] } } }, { status: 400 });
-    }
 
     const updated = await prisma.petProfile.update({
       where: { id },
@@ -34,10 +32,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    const csrfError = verifyCsrfOrigin(request);
+    if (csrfError) return csrfError;
+
+    const { error } = await checkAdminAccess();
+    if (error) return error;
     
     const { id } = await params;
 

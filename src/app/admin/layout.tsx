@@ -2,18 +2,29 @@ import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PawPrint, LogOut, LayoutDashboard } from "lucide-react";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/api/auth/signin");
   }
 
+  const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : ['admin@demo.com'];
+  if (!session.user?.email || !adminEmails.includes(session.user.email)) {
+    // 403 Forbidden - Not an admin
+    redirect("/api/auth/signin?error=AccessDenied");
+  }
+
+  // Redirect to setup if password change is required
+  if ((session.user as any)?.requiresPasswordChange) {
+    redirect("/setup");
+  }
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900">
       {/* Sidebar */}

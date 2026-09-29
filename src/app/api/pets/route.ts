@@ -3,17 +3,19 @@ import { getServerSession } from "next-auth/next";
 import { petProfileSchema } from "@/lib/schemas";
 import { PetRepository } from "@/repositories/PetRepository";
 import { PetService } from "@/services/PetService";
-import { prisma } from "@/lib/prisma"; // Needed just for the dummy user logic
+import { checkAdminAccess, verifyCsrfOrigin } from "@/lib/auth-utils";
+import { randomBytes } from "crypto";
 
 const petRepository = new PetRepository();
 const petService = new PetService(petRepository);
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession();
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const csrfError = verifyCsrfOrigin(request);
+    if (csrfError) return csrfError;
+
+    const { error, session } = await checkAdminAccess();
+    if (error) return error;
 
     const body = await request.json();
     const result = petProfileSchema.safeParse(body);
@@ -22,30 +24,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error.flatten() }, { status: 400 });
     }
 
-    const data = result.data;
+    const { slug, ...data } = result.data;
     
-    // Check if slug is unique using the service
-    const existing = await petService.getPetBySlug(data.slug);
-    if (existing) {
-      return NextResponse.json({ error: { fieldErrors: { slug: ["El identificador ya está en uso"] } } }, { status: 400 });
-    }
+    // Auto-generar slug robusto usando el nombre y un short-uuid
+    const baseSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const shortId = randomBytes(3).toString("hex"); // 6 caracteres
+    const generatedSlug = `${baseSlug ? baseSlug + '-' : ''}${shortId}`;
 
-    // Ensure the dummy admin user exists in the database
-    // (This part should ideally be in a UserService, but keeping it here for MVP simplicity)
-    await prisma.user.upsert({
-      where: { id: "1" },
-      update: {},
-      create: {
-        id: "1",
-        email: "admin@demo.com",
-        password: "admin123",
-        name: "Admin",
-      }
-    });
+    // Verificación por precaución (prácticamente imposible que colisione)
+    const existing = await petService.getPetBySlug(generatedSlug);
+    if (existing) {
+      return NextResponse.json({ error: { fieldErrors: { slug: ["Error de generación de ID. Intente de nuevo."] } } }, { status: 400 });
+    }
 
     const petProfile = await petService.createPet({
       ...data,
-      userId: "1", 
+      slug: generatedSlug,
+      breed: data.breed ?? null,
+      age: data.age ?? null,
+      gender: data.gender ?? null,
+      photoUrl: data.photoUrl ?? null,
+      ownerPhone: data.ownerPhone ?? null,
+      ownerWhatsApp: data.ownerWhatsApp ?? null,
+      userId: (session.user as any).id, 
     });
 
     return NextResponse.json(petProfile, { status: 201 });
@@ -57,10 +58,8 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const session = await getServerSession();
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    const { error } = await checkAdminAccess();
+    if (error) return error;
 
     const pets = await petService.getAllPets();
 
