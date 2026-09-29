@@ -19,11 +19,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const { id } = await params;
 
-    // Verificar slug único excluyendo este mismo ID
-    const existing = await prisma.petProfile.findUnique({ where: { slug: result.data.slug } });
-    if (existing && existing.id !== id) {
-      return NextResponse.json({ error: { fieldErrors: { slug: ["El identificador ya está en uso"] } } }, { status: 400 });
-    }
 
     const updated = await prisma.petProfile.update({
       where: { id },

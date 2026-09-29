@@ -169,11 +169,25 @@ export default function EditPetProfile({ params }: { params: Promise<{ id: strin
               <input defaultValue={initialData.age || ""} type="text" id="age" name="age" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" />
             </div>
 
+            <div className="space-y-2 md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700">Género</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="gender" value="macho" defaultChecked={initialData.gender === "macho"} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500" />
+                  <span>Macho</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="gender" value="hembra" defaultChecked={initialData.gender === "hembra"} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500" />
+                  <span>Hembra</span>
+                </label>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-700">Identificador URL (Slug) *</label>
+              <label htmlFor="slug" className="block text-sm font-medium text-gray-700">Identificador para el NFC (Auto-generado)</label>
               <div className="flex items-center">
                 <span className="px-4 py-2.5 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-gray-500 text-sm">/pets/</span>
-                <input defaultValue={initialData.slug} required type="text" id="slug" name="slug" pattern="[a-z0-9-]+" className="flex-1 w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-r-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" />
+                <input defaultValue={initialData.slug} disabled readOnly type="text" id="slug" name="slug" className="flex-1 w-full px-4 py-2.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-r-xl focus:outline-none cursor-not-allowed" />
               </div>
             </div>
           </div>
