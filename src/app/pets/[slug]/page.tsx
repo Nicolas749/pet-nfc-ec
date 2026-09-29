@@ -1,7 +1,8 @@
 import { PetRepository } from "@/repositories/PetRepository";
 import { PetService } from "@/services/PetService";
 import { notFound } from "next/navigation";
-import { Phone, MessageCircle, PawPrint, Heart } from "lucide-react";
+import { PawPrint } from "lucide-react";
+import PetProfileCard, { Theme } from "./PetProfileCard";
 
 function BackgroundPaws() {
   return (
@@ -16,7 +17,7 @@ function BackgroundPaws() {
   );
 }
 
-export default async function PublicPetProfile({ params }: { params: { slug: string } }) {
+export default async function PublicPetProfile({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
   const petRepository = new PetRepository();
@@ -28,15 +29,11 @@ export default async function PublicPetProfile({ params }: { params: { slug: str
     notFound();
   }
 
-  const waLink = pet.ownerWhatsApp 
-    ? `https://wa.me/${pet.ownerWhatsApp.replace(/[^0-9]/g, '')}` 
-    : null;
-
   const isMale = pet.gender === "macho";
 
   // Paleta de colores dinámica (Morado por defecto o hembra, Celeste para machos)
-  const theme = {
-    bg: isMale ? "bg-[#5BA4C3]" : "bg-[#9D68A8]",
+  const bg = isMale ? "bg-[#5BA4C3]" : "bg-[#9D68A8]";
+  const theme: Theme = {
     card: isMale ? "bg-[#E6F4F9]" : "bg-[#F3E8F6]",
     title: isMale ? "text-[#3B5461]" : "text-[#4A3B52]",
     pillBg: isMale ? "bg-[#D0EBF4]" : "bg-[#E2D4E6]",
@@ -47,10 +44,15 @@ export default async function PublicPetProfile({ params }: { params: { slug: str
     secondaryBtnText: isMale ? "text-[#5BA4C3]" : "text-[#9D68A8]",
     secondaryBtnBorder: isMale ? "border-[#5BA4C3]" : "border-[#9D68A8]",
     secondaryBtnHoverBg: isMale ? "hover:bg-[#5BA4C3]" : "hover:bg-[#9D68A8]",
+    tabTrack: isMale ? "bg-[#D0EBF4]" : "bg-[#E2D4E6]",
+    tabActive: isMale ? "bg-white text-[#3B5461]" : "bg-white text-[#4A3B52]",
+    tabInactive: isMale ? "text-[#587B8A] hover:text-[#3B5461]" : "text-[#6B5A74] hover:text-[#4A3B52]",
+    infoBg: isMale ? "bg-[#D0EBF4]/70" : "bg-[#E2D4E6]/70",
+    infoIcon: isMale ? "text-[#5BA4C3]" : "text-[#9D68A8]",
   };
 
   return (
-    <div className={`min-h-screen ${theme.bg} flex flex-col justify-end relative mx-auto overflow-hidden font-sans sm:max-w-md sm:border-x sm:border-white/10 sm:shadow-2xl transition-colors duration-500`}>
+    <div className={`min-h-screen ${bg} flex flex-col justify-end relative mx-auto overflow-hidden font-sans sm:max-w-md sm:border-x sm:border-white/10 sm:shadow-2xl transition-colors duration-500`}>
       
       {/* Patitas de fondo */}
       <BackgroundPaws />
@@ -71,68 +73,24 @@ export default async function PublicPetProfile({ params }: { params: { slug: str
       </div>
 
       {/* Tarjeta Inferior */}
-      <div className={`${theme.card} w-full rounded-t-[2.5rem] px-8 pt-16 pb-12 z-20 flex flex-col items-center text-center shadow-[0_-15px_40px_rgba(0,0,0,0.15)] transition-colors duration-500`}>
-        
-        <h1 className={`text-[1.75rem] font-serif font-bold ${theme.title} mb-3 leading-tight`}>
-          ¡Hola! Soy {pet.name}
-        </h1>
-        
-        {/* Pills de Información (Raza y Edad) - Opcionales */}
-        {(pet.breed || pet.age || pet.gender) && (
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-            {pet.breed && (
-              <span className={`px-3 py-1 ${theme.pillBg} ${theme.pillText} text-xs font-bold rounded-full uppercase tracking-wider`}>
-                {pet.breed}
-              </span>
-            )}
-            {pet.age && (
-              <span className={`px-3 py-1 ${theme.pillBg} ${theme.pillText} text-xs font-bold rounded-full uppercase tracking-wider`}>
-                {pet.age}
-              </span>
-            )}
-            {pet.gender && (
-              <span className={`px-3 py-1 ${theme.pillBg} ${theme.pillText} text-xs font-bold rounded-full uppercase tracking-wider`}>
-                {pet.gender}
-              </span>
-            )}
-          </div>
-        )}
-
-        <p className={`${theme.textP} text-[0.95rem] font-medium leading-relaxed mb-8 max-w-[280px]`}>
-          Si estás leyendo esto, quizás me he perdido. Por favor, avísale a mi familia que estoy a salvo usando los botones a continuación.
-        </p>
-
-        <div className="w-full flex flex-col gap-3">
-          {pet.ownerWhatsApp && (
-            <a 
-              href={waLink!} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className={`flex items-center justify-center w-full py-4 px-6 ${theme.primaryBtn} text-white rounded-[1.5rem] font-bold text-lg shadow-lg ${theme.primaryBtnHover} hover:scale-[1.02] active:scale-95 transition-all`}
-            >
-              Contactar por WhatsApp
-              <MessageCircle className="w-5 h-5 ml-2" />
-            </a>
-          )}
-
-          {pet.ownerPhone && (
-            <a 
-              href={`tel:${pet.ownerPhone}`} 
-              className={`flex items-center justify-center w-full py-4 px-6 border-2 ${theme.secondaryBtnBorder} ${theme.secondaryBtnText} rounded-[1.5rem] font-bold text-lg ${theme.secondaryBtnHoverBg} hover:text-white hover:scale-[1.02] active:scale-95 transition-all bg-transparent`}
-            >
-              Llamar a mi dueño
-              <Phone className="w-5 h-5 ml-2" />
-            </a>
-          )}
-
-          {!pet.ownerWhatsApp && !pet.ownerPhone && (
-             <div className="py-4 border-2 border-dashed border-[#84738C]/30 rounded-[1.5rem]">
-               <p className={`${theme.textP} text-sm font-medium`}>Información de contacto oculta</p>
-             </div>
-          )}
-        </div>
-
-      </div>
+      <PetProfileCard
+        theme={theme}
+        pet={{
+          name: pet.name,
+          breed: pet.breed,
+          age: pet.age,
+          gender: pet.gender,
+          ownerPhone: pet.ownerPhone,
+          ownerWhatsApp: pet.ownerWhatsApp,
+          isAggressive: pet.isAggressive,
+          allergies: pet.allergies,
+          medicalNotes: pet.medicalNotes,
+          careNotes: pet.careNotes,
+          vetName: pet.vetName,
+          vetPhone: pet.vetPhone,
+          vetUrl: pet.vetUrl,
+        }}
+      />
     </div>
   );
 }

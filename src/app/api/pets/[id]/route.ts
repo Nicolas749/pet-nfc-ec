@@ -22,7 +22,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const updated = await prisma.petProfile.update({
       where: { id },
-      data: result.data,
+      data: { ...result.data, vetUrl: result.data.vetUrl || null },
     });
 
     return NextResponse.json(updated);
