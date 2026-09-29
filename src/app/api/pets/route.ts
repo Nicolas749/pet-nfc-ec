@@ -4,6 +4,7 @@ import { petProfileSchema } from "@/lib/schemas";
 import { PetRepository } from "@/repositories/PetRepository";
 import { PetService } from "@/services/PetService";
 import { checkAdminAccess, verifyCsrfOrigin } from "@/lib/auth-utils";
+import { randomBytes } from "crypto";
 
 const petRepository = new PetRepository();
 const petService = new PetService(petRepository);
@@ -23,16 +24,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: result.error.flatten() }, { status: 400 });
     }
 
-    const data = result.data;
+    const { slug, ...data } = result.data;
     
-    // Check if slug is unique using the service
-    const existing = await petService.getPetBySlug(data.slug);
+    // Auto-generar slug robusto usando el nombre y un short-uuid
+    const baseSlug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const shortId = randomBytes(3).toString("hex"); // 6 caracteres
+    const generatedSlug = `${baseSlug ? baseSlug + '-' : ''}${shortId}`;
+
+    // Verificación por precaución (prácticamente imposible que colisione)
+    const existing = await petService.getPetBySlug(generatedSlug);
     if (existing) {
-      return NextResponse.json({ error: { fieldErrors: { slug: ["El identificador ya está en uso"] } } }, { status: 400 });
+      return NextResponse.json({ error: { fieldErrors: { slug: ["Error de generación de ID. Intente de nuevo."] } } }, { status: 400 });
     }
 
     const petProfile = await petService.createPet({
       ...data,
+      slug: generatedSlug,
+      breed: data.breed ?? null,
+      age: data.age ?? null,
+      gender: data.gender ?? null,
+      photoUrl: data.photoUrl ?? null,
+      ownerPhone: data.ownerPhone ?? null,
+      ownerWhatsApp: data.ownerWhatsApp ?? null,
       userId: (session.user as any).id, 
     });
 
