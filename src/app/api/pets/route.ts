@@ -46,6 +46,13 @@ export async function POST(request: Request) {
       photoUrl: data.photoUrl ?? null,
       ownerPhone: data.ownerPhone ?? null,
       ownerWhatsApp: data.ownerWhatsApp ?? null,
+      isAggressive: data.isAggressive ?? false,
+      allergies: data.allergies ?? null,
+      medicalNotes: data.medicalNotes ?? null,
+      careNotes: data.careNotes ?? null,
+      vetName: data.vetName ?? null,
+      vetPhone: data.vetPhone ?? null,
+      vetUrl: data.vetUrl || null,
       userId: (session.user as any).id, 
     });
 

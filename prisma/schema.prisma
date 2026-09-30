@@ -32,6 +32,13 @@ model PetProfile {
   photoUrl      String?
   ownerPhone    String?
   ownerWhatsApp String?
+  isAggressive  Boolean  @default(false)
+  allergies     String?
+  medicalNotes  String?
+  careNotes     String?
+  vetName       String?
+  vetPhone      String?
+  vetUrl        String?
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
