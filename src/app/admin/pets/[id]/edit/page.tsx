@@ -42,7 +42,8 @@ export default function EditPetProfile({ params }: { params: Promise<{ id: strin
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    const data: Record<string, unknown> = Object.fromEntries(formData.entries());
+    data.isAggressive = formData.get("isAggressive") === "on";
     
     const file = formData.get("photoFile") as File;
     let photoUrl = initialData.photoUrl;
@@ -204,6 +205,60 @@ export default function EditPetProfile({ params }: { params: Promise<{ id: strin
             <div className="space-y-2">
               <label htmlFor="ownerWhatsApp" className="block text-sm font-medium text-gray-700">WhatsApp</label>
               <input defaultValue={initialData.ownerWhatsApp || ""} type="tel" id="ownerWhatsApp" name="ownerWhatsApp" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" />
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Salud y Cuidados</h3>
+            <p className="text-sm text-gray-500">Información visible para quien encuentre a la mascota.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <label htmlFor="isAggressive" className="md:col-span-2 flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl cursor-pointer">
+              <input type="checkbox" id="isAggressive" name="isAggressive" defaultChecked={!!initialData.isAggressive} className="mt-0.5 w-4 h-4 text-amber-600 focus:ring-amber-500 rounded" />
+              <span>
+                <span className="block text-sm font-medium text-gray-900">Puede reaccionar de forma agresiva</span>
+                <span className="block text-xs text-gray-500">Se mostrará una advertencia para acercarse con precaución.</span>
+              </span>
+            </label>
+
+            <div className="space-y-2 md:col-span-2">
+              <label htmlFor="allergies" className="block text-sm font-medium text-gray-700">Alergias</label>
+              <input defaultValue={initialData.allergies || ""} type="text" id="allergies" name="allergies" maxLength={300} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="Ej. Pollo, polen, picaduras de pulga" />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="medicalNotes" className="block text-sm font-medium text-gray-700">Condiciones médicas / Medicación</label>
+              <textarea defaultValue={initialData.medicalNotes || ""} id="medicalNotes" name="medicalNotes" rows={3} maxLength={500} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none resize-none" placeholder="Ej. Epilepsia, toma medicación cada 12h" />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="careNotes" className="block text-sm font-medium text-gray-700">Cuidados importantes</label>
+              <textarea defaultValue={initialData.careNotes || ""} id="careNotes" name="careNotes" rows={3} maxLength={500} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none resize-none" placeholder="Ej. Le asustan los ruidos fuertes, no darle comida humana" />
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Veterinaria</h3>
+            <p className="text-sm text-gray-500">Contacto de emergencia si la mascota necesita atención.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label htmlFor="vetName" className="block text-sm font-medium text-gray-700">Nombre de la clínica / veterinario</label>
+              <input defaultValue={initialData.vetName || ""} type="text" id="vetName" name="vetName" maxLength={80} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="Ej. Clínica Veterinaria San Roque" />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="vetPhone" className="block text-sm font-medium text-gray-700">Teléfono de la veterinaria</label>
+              <input defaultValue={initialData.vetPhone || ""} type="tel" id="vetPhone" name="vetPhone" maxLength={20} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="+34 900 000 000" />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <label htmlFor="vetUrl" className="block text-sm font-medium text-gray-700">Enlace (sitio web, Google Maps, Instagram...)</label>
+              <input defaultValue={initialData.vetUrl || ""} type="url" id="vetUrl" name="vetUrl" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="https://maps.app.goo.gl/..." />
             </div>
           </div>
 
